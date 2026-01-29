@@ -1,4 +1,3 @@
-// controllers/formulationsController.js
 const queries = require('../Queries/formulationsQueries');
 
 const getAllFormulations = async (req, res) => {
