@@ -1,7 +1,5 @@
-// Queries/productionBatchesQueries.js
 const db = require('../db/dbConfig');
 
-// Get all production batches
 const getAllBatches = async () => {
   const batches = await db.any(`
     SELECT 
@@ -15,9 +13,7 @@ const getAllBatches = async () => {
   return batches;
 };
 
-// Get single batch with ingredients and variance
 const getBatchById = async (id) => {
-  // Get batch info
   const batch = await db.oneOrNone(`
     SELECT 
       pb.*,
@@ -32,7 +28,6 @@ const getBatchById = async (id) => {
     return null;
   }
   
-  // Get batch ingredients with variance
   const ingredients = await db.any(`
     SELECT 
       bi.id AS batch_ingredient_id,
@@ -61,7 +56,6 @@ const getBatchById = async (id) => {
   };
 };
 
-// Create production batch (with planned amounts)
 const createBatch = async (batchData, ingredientsData) => {
   const {
     formulation_id,
@@ -72,7 +66,6 @@ const createBatch = async (batchData, ingredientsData) => {
     notes
   } = batchData;
   
-  // Create batch record
   const newBatch = await db.one(`
     INSERT INTO production_batches (
       formulation_id,
@@ -92,7 +85,6 @@ const createBatch = async (batchData, ingredientsData) => {
     notes || null
   ]);
   
-  // Create batch_ingredients records (planned amounts)
   const batchIngredients = [];
   for (const ingredient of ingredientsData) {
     const batchIngredient = await db.one(`
@@ -115,9 +107,7 @@ const createBatch = async (batchData, ingredientsData) => {
   return { batch: newBatch, ingredients: batchIngredients };
 };
 
-// Update batch with actual amounts
 const updateBatchActuals = async (batchId, actualTotal, ingredientsActuals, notes) => {
-  // Update batch actual_amount and notes
   const updatedBatch = await db.one(`
     UPDATE production_batches
     SET 
@@ -130,7 +120,6 @@ const updateBatchActuals = async (batchId, actualTotal, ingredientsActuals, note
     RETURNING *
   `, [actualTotal, notes, batchId]);
   
-  // Update each ingredient's actual_amount
   for (const ingredient of ingredientsActuals) {
     await db.none(`
       UPDATE batch_ingredients
@@ -148,7 +137,6 @@ const updateBatchActuals = async (batchId, actualTotal, ingredientsActuals, note
   return updatedBatch;
 };
 
-// Delete batch (CASCADE will delete batch_ingredients)
 const deleteBatch = async (id) => {
   const deleted = await db.oneOrNone(`
     DELETE FROM production_batches WHERE id = $1 RETURNING *

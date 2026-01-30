@@ -2,7 +2,11 @@ const queries = require('../Queries/formulationsQueries');
 
 const getAllFormulations = async (req, res) => {
   try {
-    const formulations = await queries.getAllFormulations();
+    const { ingredient_id, ingredient_ids } = req.query;
+    const formulations = await queries.getAllFormulations({
+      ingredient_id,
+      ingredient_ids
+    });
     res.status(200).json(formulations);
   } catch (error) {
     console.error("Error fetching formulations:", error);

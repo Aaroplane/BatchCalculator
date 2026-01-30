@@ -78,7 +78,6 @@ const getBatchById = async (req, res) => {
 const createBatch = async (req, res) => {
   const { formulation_id, target_amount, batch_name, notes } = req.body;
   
-  // Validation
   if (!formulation_id || !target_amount) {
     return res.status(400).json({ 
       error: 'formulation_id and target_amount are required' 

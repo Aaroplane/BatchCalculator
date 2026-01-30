@@ -1,9 +1,42 @@
 // Queries/formulationsQueries.js
 const db = require('../db/dbConfig');
 
-const getAllFormulations = async () => {
+const getAllFormulations = async (filters = {}) => {
+  const { ingredient_id, ingredient_ids } = filters;
+
+  // If filtering by ingredients
+  if (ingredient_id || ingredient_ids) {
+    const ingredientIdArray = ingredient_ids
+      ? ingredient_ids.split(',').map(id => parseInt(id.trim()))
+      : [parseInt(ingredient_id)];
+
+    const formulations = await db.any(`
+      SELECT DISTINCT
+        f.id,
+        f.name,
+        f.description,
+        f.base_batch_size,
+        f.unit,
+        f.status,
+        f.version_number,
+        f.parent_formulation_id,
+        f.phases,
+        f.instructions,
+        f.notes,
+        f.created_at,
+        f.updated_at
+      FROM formulations f
+      INNER JOIN formulation_ingredients fi ON f.id = fi.formulation_id
+      WHERE fi.ingredient_id IN ($1:csv)
+      ORDER BY f.created_at DESC
+    `, [ingredientIdArray]);
+
+    return formulations;
+  }
+
+  // Default: return all formulations
   const formulations = await db.any(`
-    SELECT 
+    SELECT
       id,
       name,
       description,

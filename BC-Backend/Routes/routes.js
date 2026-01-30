@@ -18,7 +18,7 @@ router.delete('/formulations/:id', formulationsController.deleteFormulation);
 router.post('/formulations/:id/ingredients', formulationsController.addIngredient);
 router.delete('/formulations/:id/ingredients/:ingredientId', formulationsController.removeIngredient);
 
-router.get('/formulations/:id/calculate', batchesController.calculateBatch);  // Option A: Calculate only
+router.get('/formulations/:id/calculate', batchesController.calculateBatch); 
 router.get('/batches', batchesController.getAllBatches);
 router.get('/batches/:id', batchesController.getBatchById);
 router.post('/batches', batchesController.createBatch);
