@@ -4,12 +4,13 @@ const formulationQueries = require('../Queries/formulationsQueries');
 const CAN_CREATE_BATCHES = ['finalized', 'freeze', 'archived'];
 
 const calculateBatch = async (req, res) => {
-  const { id } = req.params;  // formulation id
-  const { batch_size } = req.query;  // target batch size
+  const { id } = req.params;  
+  const { batch_size } = req.query;  
   
-  if (!batch_size || batch_size <= 0) {
-    return res.status(400).json({ 
-      error: 'batch_size query parameter is required and must be positive' 
+  const parsedSize = parseFloat(batch_size);
+  if (!batch_size || isNaN(parsedSize) || parsedSize <= 0) {
+    return res.status(400).json({
+      error: 'batch_size query parameter is required and must be a positive number'
     });
   }
   
@@ -20,7 +21,7 @@ const calculateBatch = async (req, res) => {
       return res.status(404).json({ error: 'Formulation not found' });
     }
     
-    const scaleFactor = parseFloat(batch_size) / formulation.base_batch_size;
+    const scaleFactor = parsedSize / formulation.base_batch_size;
     
     const scaledIngredients = formulation.ingredients.map(ing => ({
       ingredient_id: ing.ingredient_id,
@@ -28,7 +29,7 @@ const calculateBatch = async (req, res) => {
       inci_name: ing.inci_name,
       percentage: ing.percentage,
       original_amount: (ing.percentage / 100) * formulation.base_batch_size,
-      planned_amount: (ing.percentage / 100) * parseFloat(batch_size),
+      planned_amount: (ing.percentage / 100) * parsedSize,
       unit: formulation.unit,
       phase: ing.phase
     }));
@@ -37,7 +38,7 @@ const calculateBatch = async (req, res) => {
       formulation_id: formulation.id,
       formulation_name: formulation.name,
       original_batch_size: formulation.base_batch_size,
-      target_batch_size: parseFloat(batch_size),
+      target_batch_size: parsedSize,
       scale_factor: scaleFactor,
       unit: formulation.unit,
       ingredients: scaledIngredients

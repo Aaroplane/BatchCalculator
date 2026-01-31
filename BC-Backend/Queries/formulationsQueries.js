@@ -7,8 +7,8 @@ const getAllFormulations = async (filters = {}) => {
   // If filtering by ingredients
   if (ingredient_id || ingredient_ids) {
     const ingredientIdArray = ingredient_ids
-      ? ingredient_ids.split(',').map(id => parseInt(id.trim()))
-      : [parseInt(ingredient_id)];
+      ? ingredient_ids.split(',').map(id => id.trim())
+      : [ingredient_id];
 
     const formulations = await db.any(`
       SELECT DISTINCT

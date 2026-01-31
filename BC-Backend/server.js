@@ -7,6 +7,8 @@ const routes = require('./Routes/routes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// TODO: Restrict CORS to frontend domain for production/multi-user
+// Example: app.use(cors({ origin: 'https://yourdomain.com' }));
 app.use(cors());
 app.use(express.json());
 

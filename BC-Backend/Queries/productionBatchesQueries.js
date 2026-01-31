@@ -1,4 +1,4 @@
-const db = require('../db/dbConfig');
+const db = require("../db/dbConfig");
 
 const getAllBatches = async () => {
   const batches = await db.any(`
@@ -14,7 +14,8 @@ const getAllBatches = async () => {
 };
 
 const getBatchById = async (id) => {
-  const batch = await db.oneOrNone(`
+  const batch = await db.oneOrNone(
+    `
     SELECT 
       pb.*,
       f.name AS formulation_name,
@@ -22,13 +23,16 @@ const getBatchById = async (id) => {
     FROM production_batches pb
     JOIN formulations f ON pb.formulation_id = f.id
     WHERE pb.id = $1
-  `, [id]);
-  
+  `,
+    [id]
+  );
+
   if (!batch) {
     return null;
   }
-  
-  const ingredients = await db.any(`
+
+  const ingredients = await db.any(
+    `
     SELECT 
       bi.id AS batch_ingredient_id,
       bi.planned_amount,
@@ -48,11 +52,13 @@ const getBatchById = async (id) => {
     JOIN ingredients i ON bi.ingredient_id = i.id
     WHERE bi.batch_id = $1
     ORDER BY i.name
-  `, [id]);
-  
+  `,
+    [id]
+  );
+
   return {
     ...batch,
-    ingredients: ingredients
+    ingredients: ingredients,
   };
 };
 
@@ -63,10 +69,11 @@ const createBatch = async (batchData, ingredientsData) => {
     target_amount,
     unit,
     production_date,
-    notes
+    notes,
   } = batchData;
-  
-  const newBatch = await db.one(`
+
+  const newBatch = await db.one(
+    `
     INSERT INTO production_batches (
       formulation_id,
       batch_name,
@@ -76,18 +83,21 @@ const createBatch = async (batchData, ingredientsData) => {
       notes
     ) VALUES ($1, $2, $3, $4, $5, $6)
     RETURNING *
-  `, [
-    formulation_id,
-    batch_name || null,
-    target_amount,
-    unit || 'g',
-    production_date || new Date(),
-    notes || null
-  ]);
-  
+  `,
+    [
+      formulation_id,
+      batch_name || null,
+      target_amount,
+      unit || "g",
+      production_date || new Date(),
+      notes || null,
+    ]
+  );
+
   const batchIngredients = [];
   for (const ingredient of ingredientsData) {
-    const batchIngredient = await db.one(`
+    const batchIngredient = await db.one(
+      `
       INSERT INTO batch_ingredients (
         batch_id,
         ingredient_id,
@@ -95,52 +105,70 @@ const createBatch = async (batchData, ingredientsData) => {
         unit
       ) VALUES ($1, $2, $3, $4)
       RETURNING *
-    `, [
-      newBatch.id,
-      ingredient.ingredient_id,
-      ingredient.planned_amount,
-      ingredient.unit || 'g'
-    ]);
+    `,
+      [
+        newBatch.id,
+        ingredient.ingredient_id,
+        ingredient.planned_amount,
+        ingredient.unit || "g",
+      ]
+    );
     batchIngredients.push(batchIngredient);
   }
-  
+
   return { batch: newBatch, ingredients: batchIngredients };
 };
 
-const updateBatchActuals = async (batchId, actualTotal, ingredientsActuals, notes) => {
-  const updatedBatch = await db.one(`
-    UPDATE production_batches
-    SET 
-      actual_amount = $1,
-      notes = CASE 
-        WHEN $2 IS NOT NULL THEN $2
-        ELSE notes
-      END
-    WHERE id = $3
-    RETURNING *
-  `, [actualTotal, notes, batchId]);
-  
-  for (const ingredient of ingredientsActuals) {
-    await db.none(`
-      UPDATE batch_ingredients
+const updateBatchActuals = async (
+  batchId,
+  actualTotal,
+  ingredientsActuals,
+  notes
+) => {
+  return db.tx(async (t) => {
+    const updatedBatch = await t.one(
+      `
+      UPDATE production_batches
       SET
         actual_amount = $1,
-        notes = $2
+        notes = CASE
+          WHEN $2 IS NOT NULL THEN $2
+          ELSE notes
+        END
       WHERE id = $3
-    `, [
-      ingredient.actual_amount,
-      ingredient.notes || null,
-      ingredient.batch_ingredient_id
-    ]);
-  }
-  
-  return updatedBatch;
+      RETURNING *
+    `,
+      [actualTotal, notes, batchId]
+    );
+
+    for (const ingredient of ingredientsActuals) {
+      await t.none(
+        `
+        UPDATE batch_ingredients
+        SET
+          actual_amount = $1,
+          notes = $2
+        WHERE id = $3
+      `,
+        [
+          ingredient.actual_amount,
+          ingredient.notes || null,
+          ingredient.batch_ingredient_id,
+        ]
+      );
+    }
+
+    return updatedBatch;
+  });
 };
 
 const deleteBatch = async (id) => {
-  const deleted = await db.oneOrNone(`
+  const deleted = await db.oneOrNone(
+    `
     DELETE FROM production_batches WHERE id = $1 RETURNING *
-  `, [id]);
+  `,
+    [id]
+  );
   return deleted;
 };
 
@@ -149,5 +177,5 @@ module.exports = {
   getBatchById,
   createBatch,
   updateBatchActuals,
-  deleteBatch
+  deleteBatch,
 };

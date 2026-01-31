@@ -3,13 +3,12 @@
   "version": "1.0.0",
   "description": "Cosmetic formulation batch calculator API",
   "main": "server.js",
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon server.js",
     "dbinit": "psql -U postgres -f db/schema.sql",
     "dbseed": "psql -U postgres -f db/seed.sql",
-    "dbsetup": "npm run dbinit && npm run dbseed"  
+    "dbsetup": "npm run dbinit && npm run dbseed"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -17,7 +16,6 @@
     "express": "^5.2.1",
     "nodemon": "^3.1.11",
     "pg-promise": "^12.3.0",
-    "postgres": "^3.4.7",
     "uuid": "^13.0.0"
   },
   "keywords": [],
