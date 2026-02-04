@@ -7,6 +7,8 @@ const routes = require('./Routes/routes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// TODO: Restrict CORS to frontend domain for production/multi-user
+// Example: app.use(cors({ origin: 'https://yourdomain.com' }));
 app.use(cors());
 app.use(express.json());
 
@@ -25,6 +27,10 @@ app.get('/', (req, res) => {
   res.json({ message: 'Batch Calculator API Running' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+module.exports = app;

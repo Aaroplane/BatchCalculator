@@ -1,8 +1,13 @@
 const queries = require('../Queries/formulationsQueries');
+const ingredientQueries = require('../Queries/ingredientsQueries');
 
 const getAllFormulations = async (req, res) => {
   try {
-    const formulations = await queries.getAllFormulations();
+    const { ingredient_id, ingredient_ids } = req.query;
+    const formulations = await queries.getAllFormulations({
+      ingredient_id,
+      ingredient_ids
+    });
     res.status(200).json(formulations);
   } catch (error) {
     console.error("Error fetching formulations:", error);
@@ -43,12 +48,24 @@ const createFormulation = async (req, res) => {
   }
   
   try {
+    // Verify all ingredients exist in database before creating formulation
+    for (const ingredient of ingredients) {
+      const exists = await ingredientQueries.getIngredientById(ingredient.ingredient_id);
+      if (!exists) {
+        return res.status(400).json({
+          error: `Ingredient not found in database`,
+          message: 'Add this ingredient to the database before creating a formulation',
+          missing_ingredient_id: ingredient.ingredient_id
+        });
+      }
+    }
+
     const newFormulation = await queries.createFormulation({
       name,
       base_batch_size,
       ...otherData
     });
-    
+
     const addedIngredients = [];
     for (const ingredient of ingredients) {
       const link = await queries.addIngredientToFormulation(
