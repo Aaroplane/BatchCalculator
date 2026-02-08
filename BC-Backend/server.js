@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const db = require('./db/dbConfig');
 const routes = require('./Routes/routes');
+const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,6 +27,9 @@ app.use('/api', routes);
 app.get('/', (req, res) => {
   res.json({ message: 'Batch Calculator API Running' });
 });
+
+app.use(notFound);
+app.use(errorHandler);
 
 if (require.main === module) {
   app.listen(PORT, () => {

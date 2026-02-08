@@ -17,6 +17,7 @@ const createIngredient = async (ingredientData) => {
   const {
     name,
     inci_name,
+    origin,
     ingredient_type,
     is_humectant,
     is_emollient,
@@ -32,15 +33,16 @@ const createIngredient = async (ingredientData) => {
 
   const newIngredient = await db.one(
     `INSERT INTO ingredients (
-      name, inci_name, ingredient_type,
+      name, inci_name, origin, ingredient_type,
       is_humectant, is_emollient, is_occlusive,
       is_moisturizing, is_anhydrous,
       ph_min, ph_max, solubility, max_usage_rate, notes
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
     RETURNING *`,
     [
       name,
       inci_name || null,
+      origin || null,
       ingredient_type || null,
       is_humectant || false,
       is_emollient || false,
@@ -62,6 +64,7 @@ const updateIngredient = async (id, ingredientData) => {
   const {
     name,
     inci_name,
+    origin,
     ingredient_type,
     is_humectant,
     is_emollient,
@@ -77,16 +80,17 @@ const updateIngredient = async (id, ingredientData) => {
 
   const updated = await db.oneOrNone(
     `UPDATE ingredients SET
-      name = $1, inci_name = $2, ingredient_type = $3,
-      is_humectant = $4, is_emollient = $5, is_occlusive = $6,
-      is_moisturizing = $7, is_anhydrous = $8,
-      ph_min = $9, ph_max = $10, solubility = $11,
-      max_usage_rate = $12, notes = $13, updated_at = NOW()
-    WHERE id = $14
+      name = $1, inci_name = $2, origin = $3, ingredient_type = $4,
+      is_humectant = $5, is_emollient = $6, is_occlusive = $7,
+      is_moisturizing = $8, is_anhydrous = $9,
+      ph_min = $10, ph_max = $11, solubility = $12,
+      max_usage_rate = $13, notes = $14, updated_at = NOW()
+    WHERE id = $15
     RETURNING *`,
     [
       name,
       inci_name || null,
+      origin || null,
       ingredient_type || null,
       is_humectant || false,
       is_emollient || false,
