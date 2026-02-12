@@ -34,19 +34,7 @@ const getFormulationById = async (req, res) => {
 
 const createFormulation = async (req, res) => {
   const { name, base_batch_size, ingredients, ...otherData } = req.body;
-  
-  if (!name || !base_batch_size) {
-    return res.status(400).json({ 
-      error: 'Name and base_batch_size are required' 
-    });
-  }
-  
-  if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
-    return res.status(400).json({ 
-      error: 'At least one ingredient is required' 
-    });
-  }
-  
+
   try {
     // Verify all ingredients exist in database before creating formulation
     for (const ingredient of ingredients) {
@@ -74,9 +62,9 @@ const createFormulation = async (req, res) => {
       );
       addedIngredients.push(link);
     }
-    
+
     const completeFormulation = await queries.getFormulationById(newFormulation.id);
-    
+
     res.status(201).json(completeFormulation);
   } catch (error) {
     console.error("Error creating formulation:", error);
@@ -87,24 +75,18 @@ const createFormulation = async (req, res) => {
 const updateFormulation = async (req, res) => {
   const { id } = req.params;
   const { name, base_batch_size, ...otherData } = req.body;
-  
-  if (!name || !base_batch_size) {
-    return res.status(400).json({ 
-      error: 'Name and base_batch_size are required' 
-    });
-  }
-  
+
   try {
     const updated = await queries.updateFormulation(id, {
       name,
       base_batch_size,
       ...otherData
     });
-    
+
     if (!updated) {
       return res.status(404).json({ error: 'Formulation not found' });
     }
-    
+
     const completeFormulation = await queries.getFormulationById(id);
     res.status(200).json(completeFormulation);
   } catch (error) {
@@ -134,15 +116,9 @@ const deleteFormulation = async (req, res) => {
 };
 
 const addIngredient = async (req, res) => {
-  const { id } = req.params;  
+  const { id } = req.params;
   const ingredientData = req.body;
-  
-  if (!ingredientData.ingredient_id || !ingredientData.percentage) {
-    return res.status(400).json({ 
-      error: 'ingredient_id and percentage are required' 
-    });
-  }
-  
+
   try {
     const link = await queries.addIngredientToFormulation(id, ingredientData);
     res.status(201).json(link);
