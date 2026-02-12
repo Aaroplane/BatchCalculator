@@ -161,3 +161,9 @@ static/uploads/
 *.backup
 *.old
 *.orig
+
+# Agent orchestration files
+.agents/
+.claude/agents/
+AGENTS_GUIDELINES.md
+CHANGELOG_AGENTS.md

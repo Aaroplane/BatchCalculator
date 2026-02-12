@@ -4,8 +4,9 @@ CREATE DATABASE batch_calculator_db;
 
 CREATE TABLE ingredients (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name VARCHAR(255) NOT NULL UNIQUE,
+  name VARCHAR(255) NOT NULL,
   inci_name VARCHAR(255),
+  origin VARCHAR(255),
   ingredient_type VARCHAR(100),
   
   -- Property flags (Boolean for easy filtering)
@@ -24,6 +25,11 @@ CREATE TABLE ingredients (
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
 );
+
+-- Uniqueness: one entry per name when origin is unknown,
+-- one entry per name+origin combination when origin is known
+CREATE UNIQUE INDEX idx_ingredients_name_null_origin ON ingredients(name) WHERE origin IS NULL;
+CREATE UNIQUE INDEX idx_ingredients_name_origin ON ingredients(name, origin) WHERE origin IS NOT NULL;
 
 -- Indexes for common queries
 CREATE INDEX idx_ingredients_name ON ingredients(name);
